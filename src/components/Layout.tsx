@@ -12,6 +12,8 @@ export function Layout() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isParsingAudio, setIsParsingAudio] = useState(false);
   const [currentPlayingSong, setCurrentPlayingSong] = useState<SongInfo | null>(null);
+  const [resetDragTrigger, setResetDragTrigger] = useState(0);
+
   const dispatch = useAppDispatch();
   const { songs, status, error, queryFileName, queryAudioFeatures } = useAppSelector((state) => state.recommendations);
 
@@ -65,6 +67,8 @@ export function Layout() {
   const handleSongSelect = async (songName: string) => {
     setQuery(songName);
     setUploadedFile(null);
+    setResetDragTrigger((prev) => prev + 1);
+
     const result = await dispatch(fetchRecsBySongName(songName));
 
     if (result.meta.requestStatus === "fulfilled" && result.payload.recommendations?.length > 0) {
@@ -103,6 +107,7 @@ export function Layout() {
         onYouTubeSearch={handleYouTubeSearch}
         queryFileName={queryFileName ?? ""}
         queryAudioFeatures={queryAudioFeatures}
+        resetDragTrigger={resetDragTrigger}
       />
 
       {/* Right Sidebar - Recommendations */}

@@ -22,6 +22,7 @@ interface MainContentProps {
   onYouTubeSearch: (song: SongInfo) => void;
   queryFileName: string;
   queryAudioFeatures: any;
+  resetDragTrigger: number;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -38,6 +39,7 @@ export function MainContent({
   onYouTubeSearch,
   queryFileName,
   queryAudioFeatures,
+  resetDragTrigger,
 }: MainContentProps) {
   // Fetch all songs for search suggestions
   const { data: songList = [] } = useQuery({
@@ -103,7 +105,7 @@ export function MainContent({
         <div className="w-full">
           <div className="p-4 space-y-4">
             {/* Discovery Section */}
-            <ControlPanel onAudioUpload={onAudioUpload} isParsingAudio={isParsingAudio} />
+            <ControlPanel onAudioUpload={onAudioUpload} isParsingAudio={isParsingAudio} key={resetDragTrigger} />
 
             {/* Audio Parsing Loader */}
             {isParsingAudio && (
