@@ -15,7 +15,8 @@ interface LibrarySidebarProps {
   onSongSelect: (songName: string) => void;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = "https://imd-be.onrender.com/api/v1";
 
 function useFilteredSongs(songs: SongInfo[], searchQuery: string, limit: number = 50) {
   const debouncedQuery = useDebounce(searchQuery, 300);
