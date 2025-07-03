@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { clearRecommendations, fetchRecsByAudio, fetchRecsBySongName } from "../redux/features/recommendationsSlice";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { RecommendationsSidebar } from "./RecommendationsSidebar";
-import { LibrarySidebar } from "./librarySidebar";
-import { MainContent } from "./mainContent";
+import { LibrarySidebar } from "./LibrarySidebar";
+import { MainContent } from "./MainContent";
 
 export function Layout() {
   const [query, setQuery] = useState("");
