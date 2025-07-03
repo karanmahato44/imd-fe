@@ -1,16 +1,18 @@
 import type { SongInfo } from "@/@types";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Music, Play, PlayCircle, Search } from "lucide-react";
-import React, { useMemo } from "react";
+import { Loader, Music, Play, PlayCircle, Search } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import { ControlPanel } from "./ControlPanel";
 import { QueryAnalysisPanel } from "./QueryAnalysisPanel";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { Progress } from "./ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { WaveformVisualizer } from "./WaveformVisualizer";
 
+// ... your interfaces stay the same ...
 interface MainContentProps {
   query: string;
   setQuery: (query: string) => void;
@@ -41,7 +43,51 @@ export function MainContent({
   queryAudioFeatures,
   resetDragTrigger,
 }: MainContentProps) {
-  // Fetch all songs for search suggestions
+  const [progress, setProgress] = useState(0);
+  const [parseStartTime, setParseStartTime] = useState<number | null>(null);
+
+  // Dynamic progress tracking
+  useEffect(() => {
+    if (isParsingAudio) {
+      const startTime = Date.now();
+      setParseStartTime(startTime);
+      setProgress(0);
+
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+
+        const estimatedTotalTime = 10000; // 10 seconds estimate
+
+        // Calculate progress with some smart scaling
+        let newProgress;
+        if (elapsed < estimatedTotalTime * 0.8) {
+          // First 80% of estimated time - linear progress
+          newProgress = (elapsed / estimatedTotalTime) * 80;
+        } else if (elapsed < estimatedTotalTime * 1.5) {
+          // Next phase - slower progress
+          newProgress = 80 + ((elapsed - estimatedTotalTime * 0.8) / (estimatedTotalTime * 0.7)) * 15;
+        } else {
+          // Final phase - very slow progress, max 95%
+          newProgress = Math.min(95, 95 + ((elapsed - estimatedTotalTime * 1.5) / (estimatedTotalTime * 2)) * 5);
+        }
+
+        setProgress(Math.min(95, newProgress)); // Cap at 95% until actually done
+      }, 200);
+
+      return () => clearInterval(interval);
+    } else {
+      // When parsing is done, quickly complete the progress bar
+      if (parseStartTime) {
+        setProgress(100);
+        const completeTimeout = setTimeout(() => {
+          setProgress(0);
+          setParseStartTime(null);
+        }, 500);
+        return () => clearTimeout(completeTimeout);
+      }
+    }
+  }, [isParsingAudio, parseStartTime]);
+
   const { data: songList = [] } = useQuery({
     queryKey: ["songs"],
     queryFn: async () => {
@@ -111,7 +157,7 @@ export function MainContent({
             {isParsingAudio && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-3">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-green-600 border-t-transparent"></div>
+                  <Loader className="size-4 flex-shrink-0 animate-spin rounded-full text-green-600" />
                   <div>
                     <h3 className="font-semibold text-sm text-green-900">Analyzing Audio Features</h3>
                     <p className="text-xs text-green-700">Extracting tempo, energy, chroma, and spectral features...</p>
@@ -120,11 +166,12 @@ export function MainContent({
                 <div className="mt-3 space-y-2">
                   <div className="flex justify-between text-xs text-green-700">
                     <span>Processing audio file</span>
-                    <span>Please wait...</span>
+                    <span>{Math.round(progress)}%</span>
                   </div>
-                  <div className="w-full bg-green-200 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full animate-pulse" style={{ width: "70%" }}></div>
-                  </div>
+                  <Progress
+                    value={progress}
+                    className="h-2 bg-green-200 [&>div]:bg-green-600 [&>div]:transition-all [&>div]:duration-300"
+                  />
                 </div>
               </div>
             )}
@@ -141,7 +188,7 @@ export function MainContent({
           </div>
         </div>
 
-        {/* Now Playing Bar - Sticky Bottom */}
+        {/* Now Playing Bar */}
         {currentPlayingSong && (
           <div className="bg-white border-t border-gray-200 p-3 flex-shrink-0">
             <div className="flex items-center justify-between">

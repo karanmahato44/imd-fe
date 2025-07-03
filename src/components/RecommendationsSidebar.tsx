@@ -4,6 +4,7 @@ import { ResultsPanel } from "./ResultsPanel";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface RecommendationsSidebarProps {
   songs: RecommendedSong[];
@@ -34,9 +35,16 @@ export function RecommendationsSidebar({
       <div className="p-3 flex items-center justify-between">
         <h2 className="font-semibold text-sm text-gray-900 truncate">{getRecommendationTitle()}</h2>
         {songs.length > 0 && (
-          <Button variant="ghost" size="sm" onClick={onClear} className="cursor-pointer !p-1 size-fit">
-            <X className="size-4 flex-shrink-0" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="sm" onClick={onClear} className="cursor-pointer !p-1 size-fit">
+                <X className="size-4 flex-shrink-0" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <span>Clear</span>
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
       <Separator className="bg-gray-200" />
